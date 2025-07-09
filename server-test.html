@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Parser - Server Version</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .server-status {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .server-status.online {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .server-status.offline {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .filters {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .filters label {
+            margin-right: 15px;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .results {
+            margin-top: 20px;
+        }
+        
+        .video-item {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        
+        .video-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .video-channel {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .video-duration {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .video-actions {
+            margin-top: 10px;
+        }
+        
+        .video-actions button {
+            margin-right: 10px;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .play-btn {
+            background: #28a745;
+        }
+        
+        .play-btn:hover {
+            background: #218838;
+        }
+        
+        .info-btn {
+            background: #6c757d;
+        }
+        
+        .info-btn:hover {
+            background: #5a6268;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .server-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .server-info h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .method-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .method-info h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 YouTube Parser - Server Version</h1>
+        
+        <div class="method-info">
+            <h3>🚀 Direct Requests to YouTube</h3>
+            <p>Server makes direct requests to YouTube without using proxy services. This ensures maximum speed and reliability.</p>
+        </div>
+        
+        <div id="serverStatus" class="server-status offline">
+            Checking server status...
+        </div>
+        
+        <div class="server-info">
+            <h3>📊 Server Information</h3>
+            <div id="serverStats">Loading...</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="searchCount">0</div>
+                <div class="stat-label">Searches</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalResults">0</div>
+                <div class="stat-label">Videos Found</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="responseTime">0ms</div>
+                <div class="stat-label">Response Time</div>
+            </div>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Enter song name or artist...">
+            <button id="searchBtn">🔍 Search</button>
+        </div>
+        
+        <div class="filters">
+            <label>
+                <input type="checkbox" id="filterOfficial"> 
+                Official channels only (- Topic)
+            </label>
+            <label>
+                Min. duration: 
+                <input type="number" id="minDuration" value="40" min="0" max="3600" style="width: 60px;"> sec
+            </label>
+            <label>
+                Max. results: 
+                <input type="number" id="maxResults" value="10" min="1" max="50" style="width: 60px;">
+            </label>
+        </div>
+        
+        <div id="status"></div>
+        
+        <div class="results" id="results">
+            <div class="no-results">
+                Enter a query to search for music
+            </div>
+        </div>
+    </div>
+
+    <script src="client-parser.js"></script>
+    <script>
+        let youtubeParser;
+        let searchCount = 0;
+        let totalResults = 0;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Initializing client parser...');
+            
+            youtubeParser = new ClientYouTubeParser('http://localhost:3002');
+            await checkServerStatus();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            const searchBtn = document.getElementById('searchBtn');
+            const searchInput = document.getElementById('searchInput');
+
+            searchBtn.addEventListener('click', async () => {
+                const query = searchInput.value.trim();
+                if (query) {
+                    await performSearch(query);
+                }
+            });
+
+            searchInput.addEventListener('keypress', async (e) => {
+                if (e.key === 'Enter') {
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        await performSearch(query);
+                    }
+                }
+            });
+        }
+
+
+        async function checkServerStatus() {
+            const statusElement = document.getElementById('serverStatus');
+            
+            try {
+                const isAvailable = await youtubeParser.checkAvailability();
+                
+                if (isAvailable) {
+                    statusElement.textContent = '✅ Server available';
+                    statusElement.className = 'server-status online';
+                    
+
+                    await loadServerStats();
+                } else {
+                    statusElement.textContent = '❌ Server unavailable';
+                    statusElement.className = 'server-status offline';
+                }
+            } catch (error) {
+                statusElement.textContent = '❌ Server connection error';
+                statusElement.className = 'server-status offline';
+                console.error('Server check error:', error);
+            }
+        }
+
+
+        async function loadServerStats() {
+            try {
+                const stats = await youtubeParser.getServerStats();
+                const statsElement = document.getElementById('serverStats');
+                
+                statsElement.innerHTML = `
+                    <strong>Server:</strong> ${stats.server}<br>
+                    <strong>Version:</strong> ${stats.version}<br>
+                    <strong>Method:</strong> ${stats.method}<br>
+                    <strong>CORS:</strong> ${stats.cors}<br>
+                    <strong>Port:</strong> ${stats.port}
+                `;
+            } catch (error) {
+                console.error('Error loading server statistics:', error);
+            }
+        }
+
+
+        async function performSearch(query) {
+            const startTime = Date.now();
+            const searchBtn = document.getElementById('searchBtn');
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+
+            try {
+
+                searchBtn.disabled = true;
+                searchBtn.textContent = 'Searching...';
+                
+                statusDiv.innerHTML = `
+                    <div class="status loading">
+                        🔍 Searching "${query}" via server...
+                    </div>
+                `;
+
+
+                const filterOfficial = document.getElementById('filterOfficial').checked;
+                const minDuration = parseInt(document.getElementById('minDuration').value);
+                const maxResults = parseInt(document.getElementById('maxResults').value);
+
+
+                const results = await youtubeParser.searchVideos(query, {
+                    maxResults: maxResults,
+                    filterOfficial: filterOfficial,
+                    minDuration: minDuration
+                });
+
+
+                searchCount++;
+                totalResults += results.length;
+                document.getElementById('searchCount').textContent = searchCount;
+                document.getElementById('totalResults').textContent = totalResults;
+
+
+                const responseTime = Date.now() - startTime;
+                document.getElementById('responseTime').textContent = `${responseTime}ms`;
+
+
+                statusDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Found ${results.length} videos in ${responseTime}ms
+                    </div>
+                `;
+
+            
+                displayResults(results);
+
+            } catch (error) {
+                console.error('Search error:', error);
+                
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = `
+                    <div class="no-results">
+                        An error occurred during search
+                    </div>
+                `;
+                
+            } finally {
+
+                searchBtn.disabled = false;
+                searchBtn.textContent = '🔍 Search';
+            }
+        }
+
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="no-results">
+                        Nothing found
+                    </div>
+                `;
+                return;
+            }
+
+            const resultsHTML = results.map(video => `
+                <div class="video-item">
+                    <div style="display: flex; gap: 15px; align-items: start;">
+                        <img src="${video.snippet.thumbnails.medium.url}" 
+                             alt="${video.snippet.title}" 
+                             style="width: 120px; height: 90px; object-fit: cover; border-radius: 5px;"
+                             onerror="this.src='https://i.ytimg.com/vi/${video.id.videoId}/mqdefault.jpg'">
+                        <div style="flex: 1;">
+                            <div class="video-title">${video.snippet.title}</div>
+                            <div class="video-channel">${video.snippet.channelTitle}</div>
+                            <div class="video-duration">${youtubeParser.formatDuration(video.contentDetails.duration)}</div>
+                            <div class="video-actions">
+                                <button class="play-btn" onclick="playVideo('${video.id.videoId}')">
+                                    ▶️ Play
+                                </button>
+                                <button class="info-btn" onclick="showVideoInfo('${video.id.videoId}')">
+                                    ℹ️ Info
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            resultsDiv.innerHTML = resultsHTML;
+        }
+
+
+        function playVideo(videoId) {
+            const url = `https://www.youtube.com/watch?v=${videoId}`;
+            window.open(url, '_blank');
+        }
+
+
+        async function showVideoInfo(videoId) {
+            try {
+                const videoInfo = await youtubeParser.getVideoInfo(videoId);
+                alert(`
+Title: ${videoInfo.snippet.title}
+Channel: ${videoInfo.snippet.channelTitle}
+Duration: ${youtubeParser.formatDuration(videoInfo.contentDetails.duration)}
+                `);
+            } catch (error) {
+                alert('Error getting information: ' + error.message);
+            }
+        }
+
+        
+        setInterval(checkServerStatus, 30000);
+    </script>
+</body>
+</html>
