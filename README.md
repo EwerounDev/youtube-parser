@@ -1,4 +1,5 @@
-# YouTube Parser - Server Version
+# YouTube Parser - Server Version DEPRECATED
+# Use this instead:
 
 Server version of YouTube parser with direct requests to YouTube and CORS configuration.
 
