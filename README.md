@@ -1,5 +1,5 @@
 # YouTube Parser - Server Version DEPRECATED
-# Use this instead:
+# Use this instead: https://github.com/EwerounDev/youtube-parser-go
 
 Server version of YouTube parser with direct requests to YouTube and CORS configuration.
 
